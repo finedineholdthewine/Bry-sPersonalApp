@@ -49,7 +49,7 @@ export function ChatBot({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   };
 
   return (
-    <div className="fixed bottom-6 right-6 w-full max-w-md bg-black/90 text-white border border-purple-600 p-4 rounded-xl shadow-2xl z-50">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 w-auto sm:w-full max-w-md bg-black/90 text-white border border-purple-600 p-4 rounded-xl shadow-2xl z-50">
       <div className="flex justify-between items-center mb-2">
         <h2 className="font-bold text-lg">BryBot 🤖</h2>
         <button onClick={onClose} className="text-purple-300 hover:text-white text-sm">
