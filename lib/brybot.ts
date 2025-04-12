@@ -2,12 +2,16 @@ import { getCryptoPrice } from '@/utils/getCryptoPrice';
 import { getWeather } from '@/utils/getWeather';
 import { getStockPrice } from '@/utils/getStockPrice';
 
-export async function handleBryBot(userMessage: string, city = 'Hemet') {
+export async function handleBryBot(userMessage: string, city = 'Hemet', timezone = 'America/Los_Angeles') {
   const message = userMessage.toLowerCase();
 
   if (message.includes('time')) {
     const now = new Date();
-    return `It's currently ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}.`;
+    return `It's currently ${now.toLocaleTimeString('en-US', {
+      timeZone: timezone,
+      hour: 'numeric',
+      minute: '2-digit',
+    })}.`;
   }
 
   if (message.includes('date')) {
