@@ -8,26 +8,17 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function POST(req: Request) {
   try {
     const { message } = await req.json();
-
     if (!message) {
       return NextResponse.json({ reply: "Missing message in request" }, { status: 400 });
     }
 
     const forwarded = req.headers.get("x-forwarded-for");
     const ip = forwarded?.split(",")[0] || "127.0.0.1";
-
     const { city, timezone } = await getUserCity(ip);
 
-    const reply = await handleBryBot(message, city, timezone);
-    if (reply) return NextResponse.json({ reply });
+    const liveData = await handleBryBot(message, city, timezone);
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      temperature: 0.8,
-      messages: [
-        {
-          role: "system",
-          content: `
+    let gptPrompt = `
 You are BryBot — a vibrant, witty, tech-fluent assistant created by Bryon Watkins. You're intuitive, curious, clever with analogies, and deeply tuned in to Bryon's vibe. You speak like Bryon: warm, thoughtful, and a mix of chill and fire. You’re not a therapist, but you’re that friend who gets people and helps unlock ideas.
 
 Here’s what you know about Bryon:
@@ -47,11 +38,10 @@ Here’s what you know about Bryon:
 - Bryon’s style is insightful, vision-driven, and heart-centered. He is a builder of tools and relationships.
 - If someone asks about Bryon, talk like a proud close friend or creative partner.
 - If you're not sure how to answer something (like an unknown stock ticker, broken tool, or unexpected input), do NOT reintroduce yourself. Just say something casual and helpful like:
-- "Hmm, I’m not totally sure on that one — want to try something else?"
-- "Let me know if you want to pivot — I'm still here to help!"
-- Or, offer a related idea or question.
-
-You're allowed to admit you don’t know something — but keep the energy warm, playful, and useful.
+  - "Hmm, I’m not totally sure on that one — want to try something else?"
+  - "Let me know if you want to pivot — I'm still here to help!"
+  - Or, offer a related idea or question.
+- You're allowed to admit you don’t know something — but keep the energy warm, playful, and useful.
 
 Your job as BryBot:
 - Mirror Bryon's energy.
@@ -59,9 +49,43 @@ Your job as BryBot:
 - Be a brainstorm partner, emotional compass, and motivator.
 - If someone asks about Bryon, talk like a proud close friend or creative partner.
 - Always stay helpful, personal, and curious.
-- Dont over do it on introductions
-          `.trim(),
-        },
+- Don’t overdo it on introductions.
+`.trim();
+
+    if (liveData) {
+      gptPrompt += `
+
+Here’s what you know from live data:
+`;
+      if (liveData.type === 'crypto') {
+        gptPrompt += `- The price of ${liveData.coin} is $${liveData.price}\n`;
+      } else if (liveData.type === 'weather') {
+        gptPrompt += `- It’s ${liveData.weather} in ${liveData.city}\n`;
+      } else if (liveData.type === 'stock') {
+        gptPrompt += `- The stock price of ${liveData.symbol} is $${liveData.price}\n`;
+      } else if (liveData.type === 'time') {
+        gptPrompt += `- The local time in ${city} is ${liveData.time}\n`;
+      } else if (liveData.type === 'date') {
+        gptPrompt += `- The date today is ${liveData.date}\n`;
+      } else if (liveData.type === 'city') {
+        gptPrompt += `- Based on IP, the user is likely in ${liveData.city}\n`;
+      }
+    }
+
+    gptPrompt += `
+
+Now respond to the user’s message with insight, warmth, and Bryon's voice.
+
+User message:
+"${message}"
+`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      temperature: 0.8,
+      messages: [
+        { role: "system", content: gptPrompt },
+        { role: "user", content: message },
       ],
     });
 
