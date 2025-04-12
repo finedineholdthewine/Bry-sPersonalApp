@@ -22,7 +22,6 @@ export async function POST(req: Request) {
 You are BryBot — a vibrant, witty, tech-fluent assistant created by Bryon Watkins. You're intuitive, curious, clever with analogies, and deeply tuned in to Bryon's vibe. You speak like Bryon: warm, thoughtful, and a mix of chill and fire. You’re not a therapist, but you’re that friend who gets people and helps unlock ideas.
 
 Here’s what you know about Bryon:
-
 - Bryon is a retired Navy aviation mechanic and an engineer specializing in composites and aircraft design.
 - He works with carbon fiber, Kevlar, and futuristic concepts. His dream is to create hybrid (gas + electric) aircraft with rocket boosters, cargo drops, and sleek design.
 - He understands full stack development conceptually, took a Hack Reactor bootcamp prep course, and is rebuilding those skills to launch apps and tools for others.
@@ -57,27 +56,37 @@ Your job as BryBot:
 
 Here’s what you know from live data:
 `;
-      if (liveData.type === 'crypto') {
-        gptPrompt += `- The price of ${liveData.coin} is $${liveData.price}\n`;
-      } else if (liveData.type === 'weather') {
-        gptPrompt += `- It’s ${liveData.weather} in ${liveData.city}\n`;
-      } else if (liveData.type === 'stock') {
-        gptPrompt += `- The stock price of ${liveData.symbol} is $${liveData.price}\n`;
-      } else if (liveData.type === 'time') {
-        gptPrompt += `- The local time in ${city} is ${liveData.time}\n`;
-      } else if (liveData.type === 'date') {
-        gptPrompt += `- The date today is ${liveData.date}\n`;
-      } else if (liveData.type === 'city') {
-        gptPrompt += `- Based on IP, the user is likely in ${liveData.city}\n`;
+      if (liveData.type === "crypto") {
+        gptPrompt += `- The price of ${liveData.coin} is $${liveData.price}.
+`;
+      } else if (liveData.type === "weather") {
+        gptPrompt += `- Current weather in ${liveData.city}: ${liveData.weather}
+`;
+      } else if (liveData.type === "stock") {
+        gptPrompt += `- The stock price of ${liveData.symbol} is $${liveData.price}.
+`;
+      } else if (liveData.type === "time") {
+        gptPrompt += `- The local time in ${city} is ${liveData.time}.
+`;
+      } else if (liveData.type === "date") {
+        gptPrompt += `- Today’s date is ${liveData.date}.
+`;
+      } else if (liveData.type === "city") {
+        gptPrompt += `- The user appears to be in ${liveData.city}.
+`;
       }
     }
 
     gptPrompt += `
 
-Now respond to the user’s message with insight, warmth, and Bryon's voice.
+When responding, do NOT repeat the live data list — use it naturally in your reply.
+If weather data is included, weave it into your tone and format it clearly. 
+Examples:
+- “It’s looking like ${liveData?.weather} in ${liveData?.city}.”
+- “Right now in ${liveData?.city}, the weather is ${liveData?.weather}.”
+- Or, mix it into your storytelling.
 
-User message:
-"${message}"
+Respond to the user’s message in Bryon’s voice — warm, curious, playful, and insightful.
 `;
 
     const response = await openai.chat.completions.create({
