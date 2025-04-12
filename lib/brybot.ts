@@ -1,5 +1,4 @@
 import { getCryptoPrice } from '@/utils/getCryptoPrice';
-import { getWeather } from '@/utils/getWeather';
 import { getStockPrice } from '@/utils/getStockPrice';
 
 export async function handleBryBot(userMessage: string, city = 'Hemet', timezone = 'America/Los_Angeles') {
@@ -35,9 +34,32 @@ export async function handleBryBot(userMessage: string, city = 'Hemet', timezone
     return { type: 'crypto', coin, price };
   }
 
+  // 🔥 New NWS weather call
   if (message.includes('weather')) {
-    const weather = await getWeather(city);
-    return { type: 'weather', city, weather };
+    try {
+      const res = await fetch('/api/weather');
+      const data = await res.json();
+
+      if (data?.forecast) {
+        return {
+          type: 'weather',
+          city: data.location,
+          weather: data.forecast,
+        };
+      } else {
+        return {
+          type: 'weather',
+          city: 'Unknown',
+          weather: 'Could not fetch weather right now.',
+        };
+      }
+    } catch (err: any) {
+      return {
+        type: 'weather',
+        city: 'Unknown',
+        weather: `Weather fetch error: ${err.message}`,
+      };
+    }
   }
 
   const stockMatch = userMessage.match(/stock\s+([A-Z]{1,5})/i);
@@ -47,7 +69,7 @@ export async function handleBryBot(userMessage: string, city = 'Hemet', timezone
     return { type: 'stock', symbol, price };
   }
 
-  if (message.includes("what city") || message.includes("where am i") || message.includes("my city")) {
+  if (message.includes('what city') || message.includes('where am i') || message.includes('my city')) {
     return { type: 'city', city };
   }
 
