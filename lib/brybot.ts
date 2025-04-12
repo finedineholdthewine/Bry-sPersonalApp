@@ -37,7 +37,7 @@ export async function handleBryBot(userMessage: string, city = 'Hemet', timezone
   // 🔥 New NWS weather call
   if (message.includes('weather')) {
     try {
-      const res = await fetch('/api/weather');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/weather`);
       const data = await res.json();
 
       if (data?.forecast) {
